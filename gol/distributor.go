@@ -2,6 +2,7 @@ package gol
 
 import (
 	"net/rpc"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -311,9 +312,12 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	for i := range currentWorld {
 		for j := range currentWorld[i] {
 			currentWorld[i][j] = <-c.ioInput
-			//if initWorld[i][j] == 255 {
-			//	eventChan <- CellFlipped{CompletedTurns: 0,
-			//		Cell: util.Cell{X: j, Y: i}}
+			if currentWorld[i][j] == 255 {
+				eventChan <- CellFlipped{
+					CompletedTurns: 0,
+					Cell:           util.Cell{X:j,Y: i},
+				}
+			}
 			}
 
 		}
@@ -324,14 +328,18 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	//flag.Parse()
 	client, _ := rpc.Dial("tcp", server)
 	defer client.Close()
+	isClose := make(chan bool)
 	//completedTurn := make(chan int)
 	//wordChan := make(chan [][]uint8)
 	go reportTicker(done,eventChan,&currentWorld,mutex,&turnCompleted1)
+	go keyPress(c,&turnCompleted1,&currentWorld,keyPresses, isClose)
 
 	for turnCompleted1 < p.Turns {
 		mutex.Lock()
+		previousWorld :=currentWorld
 		currentWorld = makeCall(client, p.Threads, p.ImageWidth, p.ImageHeight, currentWorld).World
 		turnCompleted1 += 1
+		compareTwoWorld(eventChan,previousWorld,currentWorld,turnCompleted1)
 		mutex.Unlock()
 	}
 
@@ -352,8 +360,8 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 		CompletedTurns: p.Turns,
 		Alive:          existingCells,
 	}
-	//filename = strconv.Itoa(p.ImageWidth) + "x" + strconv.Itoa(p.ImageHeight) + "x" + strconv.Itoa(p.Turns)
-	//makeGraph(c, filename, p.Turns, currentWorld)
+	filename = strconv.Itoa(p.ImageWidth) + "x" + strconv.Itoa(p.ImageHeight) + "x" + strconv.Itoa(p.Turns)
+	makeGraph(c, filename, p.Turns, currentWorld)
 
 	// Make sure that the Io has finished any output before exiting.
 	c.ioCommand <- ioCheckIdle
@@ -371,13 +379,56 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 
 }
 //
-//func makeGraph(c distributorChannels, filename string, turn int, finalWorld [][]uint8) {
-//	c.ioCommand <- ioOutput
-//	c.ioFilename <- filename
-//	for h, h1 := range finalWorld {
-//		for w := range h1 {
-//			c.ioOutput <- finalWorld[h][w]
-//		}
-//	}
-//	c.events <- ImageOutputComplete{CompletedTurns: turn, Filename: filename}
-//}
+func makeGraph(c distributorChannels, filename string, turn int, finalWorld [][]uint8) {
+	c.ioCommand <- ioOutput
+	c.ioFilename <- filename
+	for h, h1 := range finalWorld {
+		for w := range h1 {
+			c.ioOutput <- finalWorld[h][w]
+		}
+	}
+	c.events <- ImageOutputComplete{CompletedTurns: turn, Filename: filename}
+}
+func keyPress (c distributorChannels,completedTurn *int,currentWorld *[][]uint8,keyPress <-chan rune,isClose chan bool){
+	filename := "test file name"
+
+	for  {
+		select {
+
+		//filename := strconv.Itoa(len(currentWorld[0])) + "x" + strconv.Itoa(len(*currentWorld)) //+ "x turn:" + strconv.Itoa(CompletedTurn)//
+
+			case handle := <-keyPress:
+				switch handle {
+				case 's':
+					makeGraph(c, filename, *completedTurn, *currentWorld)
+				case 'q':
+					c.ioCommand <- ioCheckIdle
+					<-c.ioIdle
+
+					c.events <- StateChange{*completedTurn, Quitting}
+
+					os.Exit(0)
+
+
+
+				case 'k':
+
+				makeGraph(c, filename, *completedTurn, *currentWorld)
+			}
+
+
+
+		}
+	}
+
+}
+func compareTwoWorld(eventChan chan<- Event, previousWorld [][] uint8, currentWorld [][]uint8, turn int) {
+	for h , h1:= range previousWorld{
+		for w := range h1{
+			if  previousWorld[h][w] != currentWorld[h][w] {
+				eventChan <- CellFlipped{CompletedTurns: turn,Cell: util.Cell{X: w, Y: h}}
+			}
+		}
+	}
+	eventChan <- TurnComplete{CompletedTurns: turn}
+}

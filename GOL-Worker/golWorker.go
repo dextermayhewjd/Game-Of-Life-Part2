@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"net"
 	"net/rpc"
+	"os"
+
 	//"uk.ac.bris.cs/gameoflife/util"
 
 	//"uk.ac.bris.cs/gameoflife/util"
@@ -158,6 +160,18 @@ height := p.ImageHeight
 
 			}
 	return finalWorld
+}
+
+func shutDown()  {
+	os.Exit(10)
+}
+
+type ServerOperations struct {}
+
+func (s *ServerOperations) ShutDown(req stubs.Request,res *stubs.Response) (err error){
+	fmt.Println("shutting down")
+	shutDown()
+	return
 }
 
 type GameOfLifeOperations struct{}
