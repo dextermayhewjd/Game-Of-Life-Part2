@@ -8,12 +8,8 @@ type Params struct {
 }
 
 type Request struct {
-	Turns         int
 	Threads       int
 	ImageWidth    int
 	ImageHeight   int
 	CurrentWorld  [][]uint8
-	Turn          int
-	CompletedTurn chan int
-	WorldChan     chan [][]uint8
 }

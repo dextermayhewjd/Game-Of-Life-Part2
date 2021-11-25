@@ -3,9 +3,16 @@ package gol
 import (
 	"net/rpc"
 	"strconv"
+	"sync"
+	"time"
 	"uk.ac.bris.cs/gameoflife/stubs"
 	"uk.ac.bris.cs/gameoflife/util"
+
+	//"uk.ac.bris.cs/gameoflife/util"
 )
+var currentWorld [][]uint8
+//var turnCompleted1 int = 0
+
 
 type distributorChannels struct {
 	events     chan<- Event
@@ -147,18 +154,18 @@ func calculateAliveCells(world [][]uint8) []util.Cell {
 
 	return currentLivingCell
 }
-//
-//func countCell(world [][]uint8) int {
-//	sum := 0
-//	for h, h1 := range world {
-//		for w := range h1 {
-//			if world[h][w] == 255 {
-//				sum++
-//			}
-//		}
-//	}
-//	return sum
-//}
+
+func countCell(world [][]uint8) int {
+	sum := 0
+	for h, h1 := range world {
+		for w := range h1 {
+			if world[h][w] == 255 {
+				sum++
+			}
+		}
+	}
+	return sum
+}
 //
 //func reportTimer(c distributorChannels, timer *time.Ticker, reportTurn chan int, report chan<- Event, isClose chan bool, worldChan chan [][]uint8, keyPress <-chan rune) {
 //	var CompletedTurn = 0
@@ -238,56 +245,97 @@ func calculateAliveCells(world [][]uint8) []util.Cell {
 
 func makeCall(
 	client *rpc.Client,
-	turns int, //total turns
+	//turns 		  int, //total turns
 	threads       int,
 	imageWidth    int,
 	imageHeight   int,
 	currentWorld  [][]uint8,
-	turn          int, //target turns
-	completedTurn chan int,
-	worldChan     chan [][]uint8) *stubs.Response {
+	//turn          int, //target turns
+	//completedTurn chan int,
+	//worldChan     chan [][]uint8
+	) *stubs.Response {
 	request := stubs.Request{
-		Turns:         turns,
+		//Turns:         turns,
 		Threads:       threads,
 		ImageWidth:    imageWidth,
 		ImageHeight:   imageHeight,
 		CurrentWorld:  currentWorld,
-		Turn:          turn,
-		CompletedTurn: completedTurn,
-		WorldChan:     worldChan,
+		//Turn:          turn,
+		//CompletedTurn: completedTurn,
+		//WorldChan:     worldChan,
 	}
 	response := new(stubs.Response)
 	client.Call(stubs.GOLHandler,request,response)
 	return response
 }
 
+func reportTicker(done chan bool,report chan<- Event,world *[][]uint8,mutex *sync.Mutex,turn *int) {
+	ticker := time.NewTicker(2 * time.Second)
+	for  {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			mutex.Lock()
+			numOfCurrentLivingCell := countCell(*world)
+			report <-AliveCellsCount{
+				CompletedTurns: *turn,
+				CellsCount:     numOfCurrentLivingCell,
+			}
+			mutex.Unlock()
+		}
+	}
+}
+
+//func makeGraph(c distributorChannels, filename string, turn int, finalWorld [][]uint8) {
+//	c.ioCommand <- ioOutput
+//	c.ioFilename <- filename
+//	for h, h1 := range finalWorld {
+//		for w := range h1 {
+//			c.ioOutput <- finalWorld[h][w]
+//		}
+//	}
+//	c.events <- ImageOutputComplete{CompletedTurns: turn, Filename: filename}
+//}
+
 func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	filename := strconv.Itoa(p.ImageHeight) + "x" + strconv.Itoa(p.ImageWidth)
 	c.ioCommand <- ioInput
 	c.ioFilename <- filename
 	eventChan := c.events
+	currentWorld = makeEmptyWorld(p.ImageWidth, p.ImageWidth)
 
-	initWorld := makeEmptyWorld(p.ImageWidth, p.ImageWidth)
+	done :=make(chan bool)
+	var turnCompleted1 int = 0
 
-	for i := range initWorld {
-		for j := range initWorld[i] {
-			initWorld[i][j] = <-c.ioInput
+	for i := range currentWorld {
+		for j := range currentWorld[i] {
+			currentWorld[i][j] = <-c.ioInput
 			//if initWorld[i][j] == 255 {
 			//	eventChan <- CellFlipped{CompletedTurns: 0,
 			//		Cell: util.Cell{X: j, Y: i}}
 			}
 
 		}
-
+	mutex := &sync.Mutex{}
 
 	server :="127.0.0.1:8030"
 	//server := flag.String("server","127.0.0.1:8030","IP:port string to connect to as server")
 	//flag.Parse()
 	client, _ := rpc.Dial("tcp", server)
 	defer client.Close()
-	completedTurn := make(chan int)
-	wordChan := make(chan [][]uint8)
-	finalWorld := makeCall(client,p.Turns,p.Threads,p.ImageWidth,p.ImageHeight,initWorld,p.Turns,completedTurn,wordChan).World
+	//completedTurn := make(chan int)
+	//wordChan := make(chan [][]uint8)
+	go reportTicker(done,eventChan,&currentWorld,mutex,&turnCompleted1)
+
+	for turnCompleted1 < p.Turns {
+		mutex.Lock()
+		currentWorld = makeCall(client, p.Threads, p.ImageWidth, p.ImageHeight, currentWorld).World
+		turnCompleted1 += 1
+		mutex.Unlock()
+	}
+
+	done <- true
 	//isClose := make(chan bool)
 
 
@@ -297,7 +345,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 
 	//finalWorld := gameOfLife(p, initWorld, p.Turns, completedTurn, eventChan, wordChan)
 
-	existingCells := calculateAliveCells(finalWorld)
+	existingCells := calculateAliveCells(currentWorld)
 
 
 	eventChan <- FinalTurnComplete{
@@ -305,7 +353,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 		Alive:          existingCells,
 	}
 	//filename = strconv.Itoa(p.ImageWidth) + "x" + strconv.Itoa(p.ImageHeight) + "x" + strconv.Itoa(p.Turns)
-	//makeGraph(c, filename, p.Turns, finalWorld)
+	//makeGraph(c, filename, p.Turns, currentWorld)
 
 	// Make sure that the Io has finished any output before exiting.
 	c.ioCommand <- ioCheckIdle
