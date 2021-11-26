@@ -12,8 +12,6 @@ import (
 	//"uk.ac.bris.cs/gameoflife/util"
 )
 var currentWorld [][]uint8
-//var turnCompleted1 int = 0
-
 
 type distributorChannels struct {
 	events     chan<- Event
@@ -244,30 +242,23 @@ func countCell(world [][]uint8) int {
 
 // distributor divides the work between workers and interacts with other goroutines.
 
-func makeCall(
-	client *rpc.Client,
-	//turns 		  int, //total turns
-	threads       int,
-	imageWidth    int,
-	imageHeight   int,
-	currentWorld  [][]uint8,
-	//turn          int, //target turns
-	//completedTurn chan int,
-	//worldChan     chan [][]uint8
-	) *stubs.Response {
+func makeCall(client *rpc.Client, threads, imageWidth, imageHeight int, currentWorld  [][]uint8, ) *stubs.Response {
 	request := stubs.Request{
-		//Turns:         turns,
 		Threads:       threads,
 		ImageWidth:    imageWidth,
 		ImageHeight:   imageHeight,
 		CurrentWorld:  currentWorld,
-		//Turn:          turn,
-		//CompletedTurn: completedTurn,
-		//WorldChan:     worldChan,
 	}
 	response := new(stubs.Response)
 	client.Call(stubs.GOLHandler,request,response)
 	return response
+}
+
+func goServerToShutDown(client *rpc.Client,shutDownMessage string,done chan *rpc.Call ){
+	shutDownRequest := stubs.Kill{DeathMessage: shutDownMessage}
+	response := new(stubs.Response)
+	client.Go(stubs.QuitHandler,shutDownRequest,response,done)
+	return
 }
 
 func reportTicker(done chan bool,report chan<- Event,world *[][]uint8,mutex *sync.Mutex,turn *int) {
@@ -287,18 +278,6 @@ func reportTicker(done chan bool,report chan<- Event,world *[][]uint8,mutex *syn
 		}
 	}
 }
-
-//func makeGraph(c distributorChannels, filename string, turn int, finalWorld [][]uint8) {
-//	c.ioCommand <- ioOutput
-//	c.ioFilename <- filename
-//	for h, h1 := range finalWorld {
-//		for w := range h1 {
-//			c.ioOutput <- finalWorld[h][w]
-//		}
-//	}
-//	c.events <- ImageOutputComplete{CompletedTurns: turn, Filename: filename}
-//}
-
 func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	filename := strconv.Itoa(p.ImageHeight) + "x" + strconv.Itoa(p.ImageWidth)
 	c.ioCommand <- ioInput

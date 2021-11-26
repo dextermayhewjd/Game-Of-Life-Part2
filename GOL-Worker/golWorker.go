@@ -168,9 +168,11 @@ func shutDown()  {
 
 type ServerOperations struct {}
 
-func (s *ServerOperations) ShutDown(req stubs.Request,res *stubs.Response) (err error){
+func (s *ServerOperations) ShutDown(req stubs.Kill,res *stubs.Response) (err error){
+
+	if req.DeathMessage == "shutdown"{
 	fmt.Println("shutting down")
-	shutDown()
+	shutDown()}
 	return
 }
 
