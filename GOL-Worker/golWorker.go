@@ -9,9 +9,7 @@ import (
 	"net/rpc"
 	"os"
 
-	//"uk.ac.bris.cs/gameoflife/util"
 
-	//"uk.ac.bris.cs/gameoflife/util"
 
 	//"sync"
 	"time"
@@ -51,16 +49,9 @@ for w := StartX; w < EndX; w++ {
 nei := CheckCellAround(world, h, w)
 if nei > 3 || nei < 2 {
 nextWorld[h-StartY][w-StartX] = 0
-//if world[h][w] != 0 {
-//	reportChan <- gol.CellFlipped{CompletedTurns: turn,
-//		Cell: util.Cell{X: w, Y: h}}
-//}
+
 } else if nei == 3 {
 nextWorld[h-StartY][w-StartX] = 255
-//if world[h][w] != 255 {
-//	reportChan <- gol.CellFlipped{CompletedTurns: turn,
-//		Cell: util.Cell{X: w, Y: h}}
-//}
 
 } else if world[h][w] == 255 {
 nextWorld[h-StartY][w-StartX] = 255
@@ -100,31 +91,29 @@ var numberOfLivingCell = 0
 
 		return numberOfLivingCell
 }
-
-func aliveCellsCountTicker(world [][]uint8)int  {
-	ticker := time.NewTicker(2*time.Second)
-
-	for  {
-		select {
-		case <- ticker.C:
-			calculateAliveCells(world)
-		}
-	}
-}
+//
+//func aliveCellsCountTicker(world [][]uint8)int  {
+//	ticker := time.NewTicker(2*time.Second)
+//
+//	for  {
+//		select {
+//		case <- ticker.C:
+//			calculateAliveCells(world)
+//		}
+//	}
+//}
 
 func gameOfLife(p Params, world [][]uint8) [][]uint8 {
-//turnCompleted1 = 0
+
 finalWorld := world
 thread := p.Threads
 width := p.ImageWidth
 height := p.ImageHeight
-	//if turn == 0 {
-	//	return world
-	//	}
+
 
 	if thread == 1 {
 
-	//for i := 0; i < turn; i++ {
+
 		finalWorld = calculateNextState(0, 0, width, height,  finalWorld)
 								//}
 					} else {
@@ -134,10 +123,9 @@ height := p.ImageHeight
 					out[j] = make(chan [][]uint8)
 					}
 
-				//for i := 0; i < turn; i++ {
 					var partFinalWorld [][]uint8
 
-//fmt.Println("mutex locked")
+
 
 					for k := 0; k < thread; k++ {
 
@@ -151,12 +139,7 @@ height := p.ImageHeight
 							}
 
 				finalWorld = partFinalWorld
-				//worldChan <- finalWorld
-				//completedTurn <- i + 1
 
-//fmt.Println("mutex unlocked")
-
-											//}
 
 			}
 	return finalWorld
@@ -181,7 +164,6 @@ type GameOfLifeOperations struct{}
 func (s *GameOfLifeOperations) GameOfLife(req stubs.Request, res *stubs.Response) (err error) {
 			fmt.Println("Request received")
 p := Params{
-//Turns:       req.Turn,
 Threads:     req.Threads,
 ImageWidth:  req.ImageWidth,
 ImageHeight: req.ImageHeight,
@@ -196,6 +178,7 @@ func main() {
 	flag.Parse()
 	rand.Seed(time.Now().UnixNano())
 	rpc.Register(&GameOfLifeOperations{})
+	rpc.Register(&ServerOperations{})
 	listener, _ := net.Listen("tcp", ":"+*pAddr)
 	defer listener.Close()
 	rpc.Accept(listener)

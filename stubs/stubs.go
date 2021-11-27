@@ -1,6 +1,6 @@
 package stubs
 var GOLHandler = "GameOfLifeOperations.GameOfLife"
-var QuitHandler = "ServerOperations.shutDown"
+var QuitHandler = "ServerOperations.ShutDown"
 type Response struct {
 	World [][]uint8
 }
