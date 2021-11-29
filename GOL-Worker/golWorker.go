@@ -38,7 +38,6 @@ func worker(StartX int, StartY int, EndX int, EndY int, world [][]uint8, out cha
 	result := calculateNextState(StartX, StartY, EndX, EndY, world)
 	out <- result
 }
-
 func calculateNextState(StartX int, StartY int, EndX int, EndY int, world [][]uint8) [][]uint8 { //could be run correct at thread 1
 
 	width := EndX - StartX
@@ -169,7 +168,7 @@ func shutDown() {
 type ServerOperations struct{}
 
 func (s *ServerOperations) ShutDown(req stubs.Kill, res *stubs.Response) (err error) {
-
+	fmt.Println("ShutDown Operation processing")
 	if req.DeathMessage == "shutdown" {
 		fmt.Println("shutting down")
 		shutDown()
@@ -182,7 +181,6 @@ type GameOfLifeOperations struct{}
 func (s *GameOfLifeOperations) GameOfLife(req stubs.Request, res *stubs.Response) (err error) {
 	fmt.Println("Request received")
 	p := Params{
-		//Turns:       req.Turn,
 		Threads:     req.Threads,
 		ImageWidth:  req.ImageWidth,
 		ImageHeight: req.ImageHeight,
@@ -192,11 +190,19 @@ func (s *GameOfLifeOperations) GameOfLife(req stubs.Request, res *stubs.Response
 	return
 }
 
+func (s *GameOfLifeOperations) DistributedWorld(req stubs.Request2, res *stubs.Response2) (err error) {
+	fmt.Println("DistributedWorld receives the request")
+	res.PartWorld = calculateNextState(req.StartX,req.StartY,req.EndX,req.EndY,req.CurrentWorld)
+	fmt.Println("DistributedWorld finished")
+	return
+}
+
 func main() {
 	pAddr := flag.String("port", "8030", "Port to listen on")
 	flag.Parse()
 	rand.Seed(time.Now().UnixNano())
 	rpc.Register(&GameOfLifeOperations{})
+	rpc.Register(&ServerOperations{})
 	listener, _ := net.Listen("tcp", ":"+*pAddr)
 	defer listener.Close()
 	rpc.Accept(listener)
