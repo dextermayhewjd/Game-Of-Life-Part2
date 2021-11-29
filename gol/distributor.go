@@ -1,6 +1,7 @@
 package gol
 
 import (
+	"fmt"
 	"net/rpc"
 	"os"
 	"strconv"
@@ -241,6 +242,20 @@ func countCell(world [][]uint8) int {
 //
 //}
 
+func DistributeCall(client *rpc.Client, StartX, StartY, EndX, EndY  int, currentWorld [][]uint8)  *stubs.Response2{
+	request := stubs.Request2{
+		StartX: StartX,
+		StartY: StartY,
+		EndX: EndX,
+		EndY: EndY,
+		CurrentWorld: currentWorld,
+
+	}
+	response := new(stubs.Response2)
+	client.Call(stubs.DWHandler, request ,response)
+	return response
+}
+
 // distributor divides the work between workers and interacts with other goroutines.
 
 func makeCall(client *rpc.Client, threads, imageWidth, imageHeight int, currentWorld [][]uint8) *stubs.Response {
@@ -255,10 +270,10 @@ func makeCall(client *rpc.Client, threads, imageWidth, imageHeight int, currentW
 	return response
 }
 
-func goServerToShutDown(client *rpc.Client, shutDownMessage string, done chan *rpc.Call) {
-	shutDownRequest := stubs.Kill{DeathMessage: shutDownMessage}
+func goServerToShutDown(client *rpc.Client ){
+	shutDownRequest := stubs.Kill{DeathMessage: "shutdown"}
 	response := new(stubs.Response)
-	client.Go(stubs.QuitHandler, shutDownRequest, response, done)
+	client.Go(stubs.QuitHandler, shutDownRequest, response, nil)
 	return
 }
 
@@ -287,7 +302,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	currentWorld = makeEmptyWorld(p.ImageWidth, p.ImageWidth)
 
 	done := make(chan bool)
-	var turnCompleted1 int = 0
+	var turnCompleted1  = 0
 
 	for i := range currentWorld {
 		for j := range currentWorld[i] {
@@ -303,26 +318,62 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	}
 	mutex := &sync.Mutex{}
 
-	server := "127.0.0.1:8030"
-	//server := flag.String("server","127.0.0.1:8030","IP:port string to connect to as server")
+	serverList := []string {
+		"127.0.0.1:8040",
+		"127.0.0.1:8030",
+
+	}
+	serverNum := len(serverList)
+	//serverNum := 1
+	//server := flag.String("serve
+	//r","127.0.0.1:8030","IP:port string to connect to as server")
 	//flag.Parse()
-	client, _ := rpc.Dial("tcp", server)
-	defer client.Close()
+
+
+	clientList := make([]*rpc.Client,serverNum)
+	for i:= range serverList{
+		clientList[i], _ = rpc.Dial("tcp",serverList[i])
+	}
+
 
 	//completedTurn := make(chan int)
 	//wordChan := make(chan [][]uint8)
 	go reportTicker(done, eventChan, &currentWorld, mutex, &turnCompleted1)
-	go keyPress(c, &turnCompleted1, &currentWorld, keyPresses, client)
+	go keyPress(c, &turnCompleted1, &currentWorld, keyPresses, clientList,mutex)
+	if serverNum == 1 {
 
-	for turnCompleted1 < p.Turns {
-		mutex.Lock()
-		previousWorld := currentWorld
-		currentWorld = makeCall(client, p.Threads, p.ImageWidth, p.ImageHeight, currentWorld).World
-		turnCompleted1 += 1
-		compareTwoWorld(eventChan, previousWorld, currentWorld, turnCompleted1)
-		mutex.Unlock()
+		for turnCompleted1 < p.Turns {
+			mutex.Lock()
+			previousWorld := currentWorld
+			currentWorld = makeCall(clientList[0], p.Threads, p.ImageWidth, p.ImageHeight, currentWorld).World
+			turnCompleted1 += 1
+			compareTwoWorld(eventChan, previousWorld, currentWorld, turnCompleted1)
+			mutex.Unlock()
+		}
+	}else {
+		outPartWord := make([][][]uint8, serverNum)
+		//out := make([]chan [][]uint8,serverNum)
+		//for i:=0 ; i < serverNum ; i++ {
+		//	out[i] = make(chan [][]uint8)
+		//}
+		for j:=0 ; j<p.Turns ; j++{
+			mutex.Lock()
+			var partFinalWorld [][]uint8
+			for k := 0 ; k<serverNum ;k++ {
+				outPartWord[k]=DistributeCall(clientList[k],0,p.ImageHeight/serverNum*k,p.ImageWidth,p.ImageHeight/serverNum*(k+1),currentWorld).PartWorld
+			}
+
+			for i :=0 ; i<serverNum ; i++ {
+				partFinalWorld=append(partFinalWorld,outPartWord[i]...)
+			}
+			compareTwoWorld(eventChan,currentWorld,partFinalWorld,turnCompleted1)
+			currentWorld = partFinalWorld
+			turnCompleted1 += 1
+			mutex.Unlock()
+
+		}
+
 	}
-
 	done <- true
 	//isClose := make(chan bool)
 
@@ -350,7 +401,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	// Close the channel to stop the SDL goroutine gracefully. Removing may cause deadlock.
 
 	//isClose <- true
-
+	//todo defer client.close()
 	close(eventChan)
 
 }
@@ -366,7 +417,7 @@ func makeGraph(c distributorChannels, filename string, turn int, finalWorld [][]
 	}
 	c.events <- ImageOutputComplete{CompletedTurns: turn, Filename: filename}
 }
-func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8, keyPress <-chan rune, client *rpc.Client) {
+func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8, keyPress <-chan rune, clientList []*rpc.Client,mutex *sync.Mutex) {
 	filename := "test file name"
 
 	for {
@@ -386,9 +437,29 @@ func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8
 
 				os.Exit(0)
 
-			case 'k': // todo
-				goServerToShutDown(client, "Client asked shut down", nil)
-				makeGraph(c, filename, *completedTurn, *currentWorld)
+			case 'k':
+				 makeGraph(c, filename, *completedTurn, *currentWorld)
+				for i :=range clientList{
+					goServerToShutDown(clientList[i])
+				}
+
+
+				 os.Exit(10)
+			case 'p':// pause the sdl
+				c.events <- StateChange{NewState: Paused,CompletedTurns: *completedTurn}
+				mutex.Lock()
+
+				for 'p' != <- keyPress {
+
+				}
+				c.events <- StateChange{NewState: Executing,CompletedTurns: *completedTurn}
+				fmt.Println("Continuing")
+
+				mutex.Unlock()
+
+
+
+
 			}
 
 		}
