@@ -12,7 +12,7 @@ import (
 	//"uk.ac.bris.cs/gameoflife/util"
 )
 
-var currentWorld [][]uint8
+
 
 type distributorChannels struct {
 	events     chan<- Event
@@ -299,7 +299,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	c.ioCommand <- ioInput
 	c.ioFilename <- filename
 	eventChan := c.events
-	currentWorld = makeEmptyWorld(p.ImageWidth, p.ImageWidth)
+	currentWorld := makeEmptyWorld(p.ImageWidth, p.ImageWidth)
 
 	done := make(chan bool)
 	var turnCompleted1  = 0
