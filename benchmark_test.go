@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"uk.ac.bris.cs/gameoflife/gol"
@@ -12,6 +13,7 @@ func Benchmark(b *testing.B) {
 	tests := []gol.Params{
 		{ImageWidth: 512, ImageHeight: 512},
 	}
+	os.Stdout = nil
 	for _, p := range tests {
 		for _, turns := range []int{100} {
 			p.Turns = turns
