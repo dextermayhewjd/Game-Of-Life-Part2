@@ -327,7 +327,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 		"127.0.0.1:8040",
 		"127.0.0.1:8030",
 		"127.0.0.1:8050",
-		"127.0.0.1:8060",
+		//"127.0.0.1:8060",
 		//"3.84.42.215",
 		//"3.80.38.102",
 		//"54.205.166.67",
@@ -377,7 +377,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 			var partFinalWorld [][]uint8
 			for k := 0 ; k<serverNum ;k++ {
 				//outPartWord[k]=DistributeCall(clientList[k],0,p.ImageHeight/serverNum*k,p.ImageWidth,p.ImageHeight/serverNum*(k+1),currentWorld).PartWorld
-				go ServerWorker(clientList[k],0,p.ImageHeight/serverNum*k,p.ImageWidth,p.ImageHeight/serverNum*(k+1),currentWorld,out[k])
+				go ServerWorker(clientList[k],0,p.ImageHeight*k/serverNum,p.ImageWidth,p.ImageHeight*(k+1)/serverNum,currentWorld,out[k])
 			}
 
 			for i :=0 ; i<serverNum ; i++ {
@@ -474,9 +474,6 @@ func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8
 				fmt.Println("Continuing")
 
 				mutex.Unlock()
-
-
-
 
 			}
 

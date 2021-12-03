@@ -2,26 +2,84 @@ goos: darwin
 goarch: amd64
 pkg: uk.ac.bris.cs/gameoflife
 cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-Benchmark/512x512x100-1-12         	       1	3704218132 ns/op
-Benchmark/512x512x100-1-12         	       1	3657636783 ns/op
-Benchmark/512x512x100-1-12         	       1	3671969848 ns/op
-Benchmark/512x512x100-1-12         	       1	3643845902 ns/op
-Benchmark/512x512x100-1-12         	       1	3639948714 ns/op
-Benchmark/512x512x100-2-12         	       1	3652835984 ns/op
-Benchmark/512x512x100-2-12         	       1	3658679896 ns/op
-Benchmark/512x512x100-2-12         	       1	3654843134 ns/op
-Benchmark/512x512x100-2-12         	       1	3663308125 ns/op
-Benchmark/512x512x100-2-12         	       1	3731346468 ns/op
-panic: runtime error: index out of range [384] with length 384
-
-goroutine 260 [running]:
-uk.ac.bris.cs/gameoflife/gol.compareTwoWorld(0x41fc720, {0xc002f3a000, 0x200, 0xc00337ac00}, {0xc001571000, 0x180, 0xc00028bc50}, 0x0)
-	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/gol/distributor.go:469 +0x1b0
-uk.ac.bris.cs/gameoflife/gol.distributor({0x41c7d9a, 0xc0001c0720, 0xc00019acc0, 0xc0001c0720}, {0xc00019a8a0, 0xc00019bb00, 0xc00019bf20, 0xc000102120, 0xc000102fc0, 0xc0001031a0}, ...)
-	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/gol/distributor.go:370 +0x71b
-uk.ac.bris.cs/gameoflife/gol.Run({0x40413a5, 0xc00019acc0, 0x0, 0xc00028bfd0}, 0xc00019a8a0, 0xc001180fc0)
-	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/gol/gol.go:38 +0x2b4
-created by uk.ac.bris.cs/gameoflife.Benchmark.func1
-	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/benchmark_test.go:25 +0xd8
-exit status 2
-FAIL	uk.ac.bris.cs/gameoflife	74.347s
+Benchmark/512x512x100-1-12         	       1	 485400503 ns/op
+Benchmark/512x512x100-1-12         	       1	 686522997 ns/op
+Benchmark/512x512x100-1-12         	       1	 480848421 ns/op
+Benchmark/512x512x100-1-12         	       1	 492688881 ns/op
+Benchmark/512x512x100-1-12         	       1	 479452886 ns/op
+Benchmark/512x512x100-2-12         	       1	 482428947 ns/op
+Benchmark/512x512x100-2-12         	       1	 522635093 ns/op
+Benchmark/512x512x100-2-12         	       1	 491754060 ns/op
+Benchmark/512x512x100-2-12         	       1	 484876266 ns/op
+Benchmark/512x512x100-2-12         	       1	 540339789 ns/op
+Benchmark/512x512x100-3-12         	       1	 513465848 ns/op
+Benchmark/512x512x100-3-12         	       1	 533184033 ns/op
+Benchmark/512x512x100-3-12         	       1	 523160118 ns/op
+Benchmark/512x512x100-3-12         	       1	 620295661 ns/op
+Benchmark/512x512x100-3-12         	       1	 517469640 ns/op
+Benchmark/512x512x100-4-12         	       1	 538694494 ns/op
+Benchmark/512x512x100-4-12         	       1	 554154240 ns/op
+Benchmark/512x512x100-4-12         	       1	 543601747 ns/op
+Benchmark/512x512x100-4-12         	       1	 538415118 ns/op
+Benchmark/512x512x100-4-12         	       1	 541043527 ns/op
+Benchmark/512x512x100-5-12         	       1	 655942760 ns/op
+Benchmark/512x512x100-5-12         	       1	 548206054 ns/op
+Benchmark/512x512x100-5-12         	       1	 548862651 ns/op
+Benchmark/512x512x100-5-12         	       1	 539440242 ns/op
+Benchmark/512x512x100-5-12         	       1	 534317460 ns/op
+Benchmark/512x512x100-6-12         	       1	 549020633 ns/op
+Benchmark/512x512x100-6-12         	       1	 550927425 ns/op
+Benchmark/512x512x100-6-12         	       1	 664329649 ns/op
+Benchmark/512x512x100-6-12         	       1	 550578272 ns/op
+Benchmark/512x512x100-6-12         	       1	 553364153 ns/op
+Benchmark/512x512x100-7-12         	       1	 556660421 ns/op
+Benchmark/512x512x100-7-12         	       1	 548589967 ns/op
+Benchmark/512x512x100-7-12         	       1	 549401137 ns/op
+Benchmark/512x512x100-7-12         	       1	 536231611 ns/op
+Benchmark/512x512x100-7-12         	       1	 662079936 ns/op
+Benchmark/512x512x100-8-12         	       1	 572661380 ns/op
+Benchmark/512x512x100-8-12         	       1	 587840255 ns/op
+Benchmark/512x512x100-8-12         	       1	 597637743 ns/op
+Benchmark/512x512x100-8-12         	       1	 595548392 ns/op
+Benchmark/512x512x100-8-12         	       1	 591568779 ns/op
+Benchmark/512x512x100-9-12         	       1	 579292673 ns/op
+Benchmark/512x512x100-9-12         	       1	 732570591 ns/op
+Benchmark/512x512x100-9-12         	       1	 586619963 ns/op
+Benchmark/512x512x100-9-12         	       1	 631190774 ns/op
+Benchmark/512x512x100-9-12         	       1	 637450691 ns/op
+Benchmark/512x512x100-10-12        	       1	 631004816 ns/op
+Benchmark/512x512x100-10-12        	       1	 639227320 ns/op
+Benchmark/512x512x100-10-12        	       1	 607459387 ns/op
+Benchmark/512x512x100-10-12        	       1	 708822275 ns/op
+Benchmark/512x512x100-10-12        	       1	 622718880 ns/op
+Benchmark/512x512x100-11-12        	       1	 603751592 ns/op
+Benchmark/512x512x100-11-12        	       1	 587929528 ns/op
+Benchmark/512x512x100-11-12        	       1	 593158621 ns/op
+Benchmark/512x512x100-11-12        	       1	 595284980 ns/op
+Benchmark/512x512x100-11-12        	       1	 586798612 ns/op
+Benchmark/512x512x100-12-12        	       1	 690739845 ns/op
+Benchmark/512x512x100-12-12        	       1	 600454566 ns/op
+Benchmark/512x512x100-12-12        	       1	 606723610 ns/op
+Benchmark/512x512x100-12-12        	       1	 655515878 ns/op
+Benchmark/512x512x100-12-12        	       1	 601389198 ns/op
+Benchmark/512x512x100-13-12        	       1	 599796245 ns/op
+Benchmark/512x512x100-13-12        	       1	 592589779 ns/op
+Benchmark/512x512x100-13-12        	       1	 626401813 ns/op
+Benchmark/512x512x100-13-12        	       1	 575640042 ns/op
+Benchmark/512x512x100-13-12        	       1	 598339951 ns/op
+Benchmark/512x512x100-14-12        	       1	 605611524 ns/op
+Benchmark/512x512x100-14-12        	       1	 619688471 ns/op
+Benchmark/512x512x100-14-12        	       1	 613785614 ns/op
+Benchmark/512x512x100-14-12        	       1	 625892091 ns/op
+Benchmark/512x512x100-14-12        	       1	 680295719 ns/op
+Benchmark/512x512x100-15-12        	       1	 590957391 ns/op
+Benchmark/512x512x100-15-12        	       1	 607128628 ns/op
+Benchmark/512x512x100-15-12        	       1	 591929774 ns/op
+Benchmark/512x512x100-15-12        	       1	 622455621 ns/op
+Benchmark/512x512x100-15-12        	       1	 602628081 ns/op
+Benchmark/512x512x100-16-12        	       1	 620390477 ns/op
+Benchmark/512x512x100-16-12        	       1	 613833144 ns/op
+Benchmark/512x512x100-16-12        	       1	 599716748 ns/op
+Benchmark/512x512x100-16-12        	       1	 595035704 ns/op
+Benchmark/512x512x100-16-12        	       1	 594765161 ns/op
+ok  	uk.ac.bris.cs/gameoflife	94.018s
