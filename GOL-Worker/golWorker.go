@@ -8,12 +8,6 @@ import (
 	"net"
 	"net/rpc"
 	"os"
-
-	//"uk.ac.bris.cs/gameoflife/util"
-
-	//"uk.ac.bris.cs/gameoflife/util"
-
-	//"sync"
 	"time"
 	"uk.ac.bris.cs/gameoflife/stubs"
 )
@@ -146,9 +140,7 @@ func gameOfLife(p Params, world [][]uint8) [][]uint8 {
 	thread := p.Threads
 	width := p.ImageWidth
 	height := p.ImageHeight
-	//if turn == 0 {
-	//	return world
-	//	}
+
 
 	if thread == 1 {
 
