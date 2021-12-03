@@ -3,6 +3,7 @@ package gol
 import (
 	"fmt"
 	"net/rpc"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -10,6 +11,8 @@ import (
 	"uk.ac.bris.cs/gameoflife/util"
 	//"uk.ac.bris.cs/gameoflife/util"
 )
+
+
 
 type distributorChannels struct {
 	events     chan<- Event
@@ -239,16 +242,17 @@ func countCell(world [][]uint8) int {
 //
 //}
 
-func DistributeCall(client *rpc.Client, StartX, StartY, EndX, EndY int, currentWorld [][]uint8) *stubs.Response2 {
+func DistributeCall(client *rpc.Client, StartX, StartY, EndX, EndY  int, currentWorld [][]uint8)  *stubs.Response2{
 	request := stubs.Request2{
-		StartX:       StartX,
-		StartY:       StartY,
-		EndX:         EndX,
-		EndY:         EndY,
+		StartX: StartX,
+		StartY: StartY,
+		EndX: EndX,
+		EndY: EndY,
 		CurrentWorld: currentWorld,
+
 	}
 	response := new(stubs.Response2)
-	client.Call(stubs.DWHandler, request, response)
+	client.Call(stubs.DWHandler, request ,response)
 	return response
 }
 
@@ -266,11 +270,16 @@ func makeCall(client *rpc.Client, threads, imageWidth, imageHeight int, currentW
 	return response
 }
 
-func goServerToShutDown(client *rpc.Client) {
+func goServerToShutDown(client *rpc.Client ){
 	shutDownRequest := stubs.Kill{DeathMessage: "shutdown"}
 	response := new(stubs.Response)
 	client.Go(stubs.QuitHandler, shutDownRequest, response, nil)
 	return
+}
+
+func ServerWorker(client *rpc.Client,StartX int, StartY int, EndX int, EndY int,world [][]uint8, out chan<- [][]uint8) {
+	result :=DistributeCall(client,StartX,StartY,EndX,EndY,world).PartWorld
+	out<- result
 }
 
 func reportTicker(done chan bool, report chan<- Event, world *[][]uint8, mutex *sync.Mutex, turn *int) {
@@ -298,7 +307,7 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	currentWorld := makeEmptyWorld(p.ImageWidth, p.ImageWidth)
 
 	done := make(chan bool)
-	var turnCompleted1 = 0
+	var turnCompleted1  = 0
 
 	for i := range currentWorld {
 		for j := range currentWorld[i] {
@@ -314,11 +323,15 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	}
 	mutex := &sync.Mutex{}
 
-	serverList := []string{
+	serverList := []string {
 		"127.0.0.1:8040",
 		"127.0.0.1:8030",
 		"127.0.0.1:8050",
 		"127.0.0.1:8060",
+		//"3.84.42.215",
+		//"3.80.38.102",
+		//"54.205.166.67",
+		//"35.171.23.207",
 	}
 	serverNum := len(serverList)
 	//serverNum := 1
@@ -326,15 +339,17 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 	//r","127.0.0.1:8030","IP:port string to connect to as server")
 	//flag.Parse()
 
-	clientList := make([]*rpc.Client, serverNum)
-	for i := range serverList {
-		clientList[i], _ = rpc.Dial("tcp", serverList[i])
+
+	clientList := make([]*rpc.Client,serverNum)
+	for i:= range serverList{
+		clientList[i], _ = rpc.Dial("tcp",serverList[i])
 	}
+
 
 	//completedTurn := make(chan int)
 	//wordChan := make(chan [][]uint8)
 	go reportTicker(done, eventChan, &currentWorld, mutex, &turnCompleted1)
-	go keyPress(c, &turnCompleted1, &currentWorld, keyPresses, clientList, mutex)
+	go keyPress(c, &turnCompleted1, &currentWorld, keyPresses, clientList,mutex)
 	if serverNum == 1 {
 
 		for turnCompleted1 < p.Turns {
@@ -345,28 +360,31 @@ func distributor(p Params, c distributorChannels, keyPresses <-chan rune) {
 			compareTwoWorld(eventChan, previousWorld, currentWorld, turnCompleted1)
 			mutex.Unlock()
 		}
-	} else {
-		outPartWord := make([][][]uint8, serverNum)
+	}else {
+		//outPartWord := make([][][]uint8, serverNum)
 		//out := make([]chan [][]uint8,serverNum)
 		//for i:=0 ; i < serverNum ; i++ {
 		//	out[i] = make(chan [][]uint8)
 		//}
-		Extre := p.ImageHeight % p.Threads
-		for j := 0; j < p.Turns; j++ {
+		for j:=0 ; j<p.Turns ; j++{
 			mutex.Lock()
+			//
+			out := make([]chan [][]uint8, serverNum)
+			for j := 0; j < serverNum; j++ {
+				out[j] = make(chan [][]uint8)
+			}
+			//
 			var partFinalWorld [][]uint8
-			for k := 0; k < serverNum; k++ {
-				if Extre != 0 && k == serverNum-1 {
-					outPartWord[k] = DistributeCall(clientList[k], 0, p.ImageHeight/serverNum*k, p.ImageWidth, p.ImageHeight/serverNum*(k+1)+Extre, currentWorld).PartWorld
-				} else {
-					outPartWord[k] = DistributeCall(clientList[k], 0, p.ImageHeight/serverNum*k, p.ImageWidth, p.ImageHeight/serverNum*(k+1), currentWorld).PartWorld
-				}
+			for k := 0 ; k<serverNum ;k++ {
+				//outPartWord[k]=DistributeCall(clientList[k],0,p.ImageHeight/serverNum*k,p.ImageWidth,p.ImageHeight/serverNum*(k+1),currentWorld).PartWorld
+				go ServerWorker(clientList[k],0,p.ImageHeight/serverNum*k,p.ImageWidth,p.ImageHeight/serverNum*(k+1),currentWorld,out[k])
 			}
 
-			for i := 0; i < serverNum; i++ {
-				partFinalWorld = append(partFinalWorld, outPartWord[i]...)
+			for i :=0 ; i<serverNum ; i++ {
+				partFinalWorld=append(partFinalWorld,<-out[i]...)
+				//partFinalWorld=append(partFinalWorld,outPartWord[i]...)
 			}
-			compareTwoWorld(eventChan, currentWorld, partFinalWorld, turnCompleted1)
+			compareTwoWorld(eventChan,currentWorld,partFinalWorld,turnCompleted1)
 			currentWorld = partFinalWorld
 			turnCompleted1 += 1
 			mutex.Unlock()
@@ -417,7 +435,7 @@ func makeGraph(c distributorChannels, filename string, turn int, finalWorld [][]
 	}
 	c.events <- ImageOutputComplete{CompletedTurns: turn, Filename: filename}
 }
-func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8, keyPress <-chan rune, clientList []*rpc.Client, mutex *sync.Mutex) {
+func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8, keyPress <-chan rune, clientList []*rpc.Client,mutex *sync.Mutex) {
 	filename := "test file name"
 
 	for {
@@ -435,28 +453,30 @@ func keyPress(c distributorChannels, completedTurn *int, currentWorld *[][]uint8
 
 				c.events <- StateChange{*completedTurn, Quitting}
 
-				c.events <- FinalTurnComplete{CompletedTurns: *completedTurn}
+				os.Exit(0)
 
 			case 'k':
 				makeGraph(c, filename, *completedTurn, *currentWorld)
-				for i := range clientList {
+				for i :=range clientList{
 					goServerToShutDown(clientList[i])
 				}
-				c.events <- StateChange{*completedTurn, Quitting}
 
-				c.events <- FinalTurnComplete{CompletedTurns: *completedTurn}
 
-			case 'p': // pause the sdl
-				c.events <- StateChange{NewState: Paused, CompletedTurns: *completedTurn}
+				os.Exit(10)
+			case 'p':// pause the sdl
+				c.events <- StateChange{NewState: Paused,CompletedTurns: *completedTurn}
 				mutex.Lock()
 
-				for 'p' != <-keyPress {
+				for 'p' != <- keyPress {
 
 				}
-				c.events <- StateChange{NewState: Executing, CompletedTurns: *completedTurn}
+				c.events <- StateChange{NewState: Executing,CompletedTurns: *completedTurn}
 				fmt.Println("Continuing")
 
 				mutex.Unlock()
+
+
+
 
 			}
 

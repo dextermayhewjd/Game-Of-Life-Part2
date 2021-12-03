@@ -69,6 +69,24 @@ func calculateNextState(StartX int, StartY int, EndX int, EndY int, world [][]ui
 	return nextWorld
 }
 
+//func CheckCellAround(world [][]uint8, x int, y int) int {
+//	sum := 0
+//	for i := -1; i < 2; i++ {
+//		for j := -1; j < 2; j++ {
+//			if i == 0 && j == 0 { //ignore the centre cell
+//				continue
+//			}
+//			x1 := (x + i + len(world)) % len(world)
+//			y1 := (y + j + len(world[0])) % len(world[0])
+//
+//			if world[x1][y1] == 255 {
+//				sum += 1
+//			}
+//		}
+//	}
+//	return sum
+//}
+
 func CheckCellAround(world [][]uint8, x int, y int) int {
 	sum := 0
 	for i := -1; i < 2; i++ {
@@ -76,9 +94,20 @@ func CheckCellAround(world [][]uint8, x int, y int) int {
 			if i == 0 && j == 0 { //ignore the centre cell
 				continue
 			}
-			x1 := (x + i + len(world)) % len(world)
-			y1 := (y + j + len(world[0])) % len(world[0])
-
+			x1 := x + i
+			y1 := y + j
+			if x+i < 0 {
+				x1 = len(world) - 1
+			}
+			if x+i >= len(world) {
+				x1 = x + i - len(world)
+			}
+			if y+j < 0 {
+				y1 = len(world[x1]) - 1
+			}
+			if y+j >= len(world[x1]) {
+				y1 = y + j - len(world[x1])
+			}
 			if world[x1][y1] == 255 {
 				sum += 1
 			}

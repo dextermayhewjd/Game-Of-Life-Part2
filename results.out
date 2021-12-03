@@ -2,84 +2,26 @@ goos: darwin
 goarch: amd64
 pkg: uk.ac.bris.cs/gameoflife
 cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-Benchmark/512x512x100-1-12         	       1	3560726193 ns/op
-Benchmark/512x512x100-1-12         	       1	3561002392 ns/op
-Benchmark/512x512x100-1-12         	       1	3845840983 ns/op
-Benchmark/512x512x100-1-12         	       1	3604964226 ns/op
-Benchmark/512x512x100-1-12         	       1	3530819085 ns/op
-Benchmark/512x512x100-2-12         	       1	1879771964 ns/op
-Benchmark/512x512x100-2-12         	       1	1882275850 ns/op
-Benchmark/512x512x100-2-12         	       1	1901395801 ns/op
-Benchmark/512x512x100-2-12         	       1	1887381090 ns/op
-Benchmark/512x512x100-2-12         	       1	1892057596 ns/op
-Benchmark/512x512x100-3-12         	       1	1349385546 ns/op
-Benchmark/512x512x100-3-12         	       1	1349220958 ns/op
-Benchmark/512x512x100-3-12         	       1	1343864805 ns/op
-Benchmark/512x512x100-3-12         	       1	1354289474 ns/op
-Benchmark/512x512x100-3-12         	       1	1344169018 ns/op
-Benchmark/512x512x100-4-12         	       1	1107738906 ns/op
-Benchmark/512x512x100-4-12         	       1	1126685391 ns/op
-Benchmark/512x512x100-4-12         	       1	1130976865 ns/op
-Benchmark/512x512x100-4-12         	       1	1121029134 ns/op
-Benchmark/512x512x100-4-12         	       1	1111195499 ns/op
-Benchmark/512x512x100-5-12         	       1	1064332522 ns/op
-Benchmark/512x512x100-5-12         	       1	1052826853 ns/op
-Benchmark/512x512x100-5-12         	       1	1072687138 ns/op
-Benchmark/512x512x100-5-12         	       1	1084874813 ns/op
-Benchmark/512x512x100-5-12         	       1	1114133937 ns/op
-Benchmark/512x512x100-6-12         	       1	1037782442 ns/op
-Benchmark/512x512x100-6-12         	       1	1039756237 ns/op
-Benchmark/512x512x100-6-12         	       1	1010782861 ns/op
-Benchmark/512x512x100-6-12         	       1	1010682680 ns/op
-Benchmark/512x512x100-6-12         	       1	1037388376 ns/op
-Benchmark/512x512x100-7-12         	       1	 971498282 ns/op
-Benchmark/512x512x100-7-12         	       1	 968344681 ns/op
-Benchmark/512x512x100-7-12         	       1	 968666817 ns/op
-Benchmark/512x512x100-7-12         	       1	 978961098 ns/op
-Benchmark/512x512x100-7-12         	       1	 946420767 ns/op
-Benchmark/512x512x100-8-12         	       1	 894122995 ns/op
-Benchmark/512x512x100-8-12         	       1	 928279615 ns/op
-Benchmark/512x512x100-8-12         	       1	 931063359 ns/op
-Benchmark/512x512x100-8-12         	       1	 905822642 ns/op
-Benchmark/512x512x100-8-12         	       1	 909721038 ns/op
-Benchmark/512x512x100-9-12         	       1	 872519601 ns/op
-Benchmark/512x512x100-9-12         	       1	 847865547 ns/op
-Benchmark/512x512x100-9-12         	       1	 844707403 ns/op
-Benchmark/512x512x100-9-12         	       1	 843598728 ns/op
-Benchmark/512x512x100-9-12         	       1	 844853974 ns/op
-Benchmark/512x512x100-10-12        	       1	 852689406 ns/op
-Benchmark/512x512x100-10-12        	       1	 863448934 ns/op
-Benchmark/512x512x100-10-12        	       1	 847872094 ns/op
-Benchmark/512x512x100-10-12        	       1	 918965139 ns/op
-Benchmark/512x512x100-10-12        	       1	 890829970 ns/op
-Benchmark/512x512x100-11-12        	       1	 952091482 ns/op
-Benchmark/512x512x100-11-12        	       1	 927307928 ns/op
-Benchmark/512x512x100-11-12        	       1	 860957882 ns/op
-Benchmark/512x512x100-11-12        	       1	 917245200 ns/op
-Benchmark/512x512x100-11-12        	       1	 963348187 ns/op
-Benchmark/512x512x100-12-12        	       1	 951235810 ns/op
-Benchmark/512x512x100-12-12        	       1	1047174888 ns/op
-Benchmark/512x512x100-12-12        	       1	 939337735 ns/op
-Benchmark/512x512x100-12-12        	       1	 937017766 ns/op
-Benchmark/512x512x100-12-12        	       1	 967333627 ns/op
-Benchmark/512x512x100-13-12        	       1	 901194931 ns/op
-Benchmark/512x512x100-13-12        	       1	 905387741 ns/op
-Benchmark/512x512x100-13-12        	       1	 912263053 ns/op
-Benchmark/512x512x100-13-12        	       1	 909605145 ns/op
-Benchmark/512x512x100-13-12        	       1	 936058398 ns/op
-Benchmark/512x512x100-14-12        	       1	 899340143 ns/op
-Benchmark/512x512x100-14-12        	       1	 887327104 ns/op
-Benchmark/512x512x100-14-12        	       1	 892201455 ns/op
-Benchmark/512x512x100-14-12        	       1	 895256339 ns/op
-Benchmark/512x512x100-14-12        	       1	 896888641 ns/op
-Benchmark/512x512x100-15-12        	       1	 895545223 ns/op
-Benchmark/512x512x100-15-12        	       1	 894299058 ns/op
-Benchmark/512x512x100-15-12        	       1	 907848022 ns/op
-Benchmark/512x512x100-15-12        	       1	 886804047 ns/op
-Benchmark/512x512x100-15-12        	       1	 895548135 ns/op
-Benchmark/512x512x100-16-12        	       1	 875205483 ns/op
-Benchmark/512x512x100-16-12        	       1	 873114664 ns/op
-Benchmark/512x512x100-16-12        	       1	 873237667 ns/op
-Benchmark/512x512x100-16-12        	       1	 885680342 ns/op
-Benchmark/512x512x100-16-12        	       1	 908949435 ns/op
-ok  	uk.ac.bris.cs/gameoflife	192.830s
+Benchmark/512x512x100-1-12         	       1	3704218132 ns/op
+Benchmark/512x512x100-1-12         	       1	3657636783 ns/op
+Benchmark/512x512x100-1-12         	       1	3671969848 ns/op
+Benchmark/512x512x100-1-12         	       1	3643845902 ns/op
+Benchmark/512x512x100-1-12         	       1	3639948714 ns/op
+Benchmark/512x512x100-2-12         	       1	3652835984 ns/op
+Benchmark/512x512x100-2-12         	       1	3658679896 ns/op
+Benchmark/512x512x100-2-12         	       1	3654843134 ns/op
+Benchmark/512x512x100-2-12         	       1	3663308125 ns/op
+Benchmark/512x512x100-2-12         	       1	3731346468 ns/op
+panic: runtime error: index out of range [384] with length 384
+
+goroutine 260 [running]:
+uk.ac.bris.cs/gameoflife/gol.compareTwoWorld(0x41fc720, {0xc002f3a000, 0x200, 0xc00337ac00}, {0xc001571000, 0x180, 0xc00028bc50}, 0x0)
+	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/gol/distributor.go:469 +0x1b0
+uk.ac.bris.cs/gameoflife/gol.distributor({0x41c7d9a, 0xc0001c0720, 0xc00019acc0, 0xc0001c0720}, {0xc00019a8a0, 0xc00019bb00, 0xc00019bf20, 0xc000102120, 0xc000102fc0, 0xc0001031a0}, ...)
+	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/gol/distributor.go:370 +0x71b
+uk.ac.bris.cs/gameoflife/gol.Run({0x40413a5, 0xc00019acc0, 0x0, 0xc00028bfd0}, 0xc00019a8a0, 0xc001180fc0)
+	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/gol/gol.go:38 +0x2b4
+created by uk.ac.bris.cs/gameoflife.Benchmark.func1
+	/Users/dingjiahua/Documents/GitHub/Game-Of-Life-Part2/benchmark_test.go:25 +0xd8
+exit status 2
+FAIL	uk.ac.bris.cs/gameoflife	74.347s
